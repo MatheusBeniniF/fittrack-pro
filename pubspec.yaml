@@ -1,0 +1,84 @@
+name: fittrack_pro
+description: "A fitness tracking app with advanced UI and native integrations"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_bloc: ^8.1.3
+  equatable: ^2.0.5
+  
+  # Functional Programming
+  dartz: ^0.10.1
+  
+  # Dependency Injection
+  get_it: ^7.6.4
+  injectable: ^2.3.2
+  
+  # Data Persistence
+  shared_preferences: ^2.2.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  
+  # Network & API
+  dio: ^5.3.2
+  json_annotation: ^4.8.1
+  
+  # UI & Animation
+  animations: ^2.0.8
+  flutter_staggered_animations: ^1.1.1
+  lottie: ^2.7.0
+  shimmer: ^3.0.0
+  
+  # Charts & Data Visualization
+  fl_chart: ^0.64.0
+  
+  # Native Platform Integration
+  permission_handler: ^11.0.1
+  device_info_plus: ^9.1.0
+  
+  # Background & Notifications
+  flutter_local_notifications: ^16.1.0
+  workmanager: ^0.5.2
+  
+  # Sensors & Hardware
+  sensors_plus: ^4.0.2
+  vibration: ^1.8.4
+  
+  # Utils
+  intl: ^0.18.1
+  uuid: ^4.1.0
+  
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  # Code Generation
+  build_runner: ^2.4.7
+  injectable_generator: ^2.4.1
+  json_serializable: ^6.7.1
+  hive_generator: ^2.0.1
+  
+  # Testing
+  bloc_test: ^9.1.5
+  mocktail: ^1.0.1
+  
+  # Code Quality
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/animations/
+    - assets/icons/
