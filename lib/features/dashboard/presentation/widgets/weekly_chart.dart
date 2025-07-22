@@ -38,8 +38,8 @@ class _WeeklyChartState extends State<WeeklyChart> {
                 Text(
                   'Weekly Activity',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 _buildChartToggle(),
               ],
@@ -99,14 +99,17 @@ class _WeeklyChartState extends State<WeeklyChart> {
     final now = DateTime.now();
     for (int i = 6; i >= 0; i--) {
       final date = now.subtract(Duration(days: i));
-      final dayStats = widget.stats.dailyStats.where(
-        (s) => s.date.day == date.day && s.date.month == date.month,
-      ).firstOrNull;
+      final dayStats = widget.stats.dailyStats
+          .where(
+            (s) => s.date.day == date.day && s.date.month == date.month,
+          )
+          .firstOrNull;
       double yValue;
       if (_selectedType == 'Calories') {
         yValue = dayStats?.calories ?? (i * 50 + 100).toDouble();
       } else {
-        yValue = dayStats?.duration.inMinutes.toDouble() ?? (i * 10 + 30).toDouble();
+        yValue =
+            dayStats?.duration.inMinutes.toDouble() ?? (i * 10 + 30).toDouble();
       }
       weekData.add(ChartDataPoint(
         x: (6 - i).toDouble(),
@@ -124,8 +127,8 @@ class _WeeklyChartState extends State<WeeklyChart> {
   }
 
   Widget _buildWeeklyStats() {
-    final weeklyData = widget.stats.weeklyStats.isNotEmpty 
-        ? widget.stats.weeklyStats.first 
+    final weeklyData = widget.stats.weeklyStats.isNotEmpty
+        ? widget.stats.weeklyStats.first
         : WeeklyStats(
             weekStart: DateTime.now().subtract(const Duration(days: 7)),
             workouts: 5,
@@ -146,7 +149,8 @@ class _WeeklyChartState extends State<WeeklyChart> {
         Expanded(
           child: _WeeklyStatItem(
             label: 'Duration',
-            value: '${weeklyData.duration.inHours}h ${weeklyData.duration.inMinutes % 60}m',
+            value:
+                '${weeklyData.duration.inHours}h ${weeklyData.duration.inMinutes % 60}m',
             icon: Icons.timer,
           ),
         ),
@@ -226,8 +230,8 @@ class _WeeklyStatItem extends StatelessWidget {
             Text(
               value,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ],
         ),
@@ -235,8 +239,8 @@ class _WeeklyStatItem extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-          ),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              ),
         ),
       ],
     );

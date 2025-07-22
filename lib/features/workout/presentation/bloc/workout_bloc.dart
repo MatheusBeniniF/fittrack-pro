@@ -1,17 +1,20 @@
 import 'dart:async';
+import 'dart:isolate';
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 import '../../domain/entities/workout.dart';
 import '../../domain/usecases/workout_usecases.dart';
+import '../../../../core/utils/background_service.dart';
 
 part 'workout_event.dart';
 part 'workout_state.dart';
 
 @injectable
 class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
-  static const double earthRadius = 6371000.0; // metros
+  static const double earthRadius = 6371000.0; // meters
   final StartWorkout _startWorkout;
   final PauseWorkout _pauseWorkout;
   final ResumeWorkout _resumeWorkout;
@@ -25,6 +28,8 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
   DateTime? _workoutStartTime;
   DateTime? _pauseStartTime;
   Duration _totalPausedDuration = Duration.zero;
+  ReceivePort? _receivePort;
+  bool _isBackgroundServiceActive = false;
 
   WorkoutBloc(
     this._startWorkout,
@@ -44,6 +49,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     on<LoadCurrentWorkoutEvent>(_onLoadCurrentWorkout);
 
     _startListeningToCurrentWorkout();
+    _setupBackgroundCommunication();
   }
 
   void _startListeningToCurrentWorkout() {
@@ -53,6 +59,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         if (workout != null && workout.status == WorkoutStatus.inProgress) {
           _workoutStartTime = workout.startTime;
           _startTimers();
+          _startBackgroundService();
 
           final elapsed = DateTime.now().difference(_workoutStartTime!) -
               _totalPausedDuration;
@@ -68,6 +75,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         } else if (workout != null &&
             workout.status == WorkoutStatus.completed) {
           _stopTimers();
+          _stopBackgroundService();
           emit(WorkoutCompleted(workout));
         }
       },
@@ -305,6 +313,61 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     _timer?.cancel();
     _heartRateTimer?.cancel();
     _currentWorkoutSubscription?.cancel();
+    _receivePort?.close();
+    _stopBackgroundService();
     return super.close();
+  }
+
+  void _setupBackgroundCommunication() {
+    _receivePort = ReceivePort();
+    IsolateNameServer.registerPortWithName(
+        _receivePort!.sendPort, 'workout_control');
+
+    _receivePort!.listen((message) {
+      if (message is Map<String, dynamic>) {
+        final action = message['action'] as String?;
+
+        switch (action) {
+          case 'pause':
+            if (state is WorkoutInProgress) {
+              final currentState = state as WorkoutInProgress;
+              add(PauseWorkoutEvent(currentState.workout.id));
+            }
+            break;
+          case 'resume':
+            if (state is WorkoutInProgress) {
+              final currentState = state as WorkoutInProgress;
+              add(ResumeWorkoutEvent(currentState.workout.id));
+            }
+            break;
+          case 'stop':
+            if (state is WorkoutInProgress) {
+              final currentState = state as WorkoutInProgress;
+              add(StopWorkoutEvent(currentState.workout.id));
+            }
+            break;
+        }
+      }
+    });
+  }
+
+  Future<void> _startBackgroundService() async {
+    if (_isBackgroundServiceActive) return;
+
+    final currentState = state;
+    if (currentState is WorkoutInProgress) {
+      await BackgroundService.instance.startWorkoutTracking(
+        workoutType: currentState.workout.type.toString().split('.').last,
+        duration: const Duration(hours: 1),
+      );
+      _isBackgroundServiceActive = true;
+    }
+  }
+
+  Future<void> _stopBackgroundService() async {
+    if (!_isBackgroundServiceActive) return;
+
+    await BackgroundService.instance.stopWorkoutTracking();
+    _isBackgroundServiceActive = false;
   }
 }

@@ -46,8 +46,7 @@ class WorkoutControls extends StatelessWidget {
           ),
           _ControlButton(
             icon: Icons.skip_next,
-            onPressed: () {
-            },
+            onPressed: () {},
             backgroundColor: AppColors.secondary,
             size: 56,
           ),
@@ -84,12 +83,12 @@ class _ControlButtonState extends State<_ControlButton>
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
-    
+
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 0.95,

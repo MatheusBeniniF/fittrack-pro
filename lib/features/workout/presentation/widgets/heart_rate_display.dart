@@ -23,12 +23,12 @@ class _HeartRateDisplayState extends State<HeartRateDisplay>
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _pulseAnimation = Tween<double>(
       begin: 1.0,
       end: 1.2,
@@ -36,7 +36,7 @@ class _HeartRateDisplayState extends State<HeartRateDisplay>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
-    
+
     _startPulseAnimation();
   }
 

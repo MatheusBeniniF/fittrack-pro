@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/constants/app_theme.dart';
 import 'core/injection/injection.dart';
+import 'core/utils/background_service.dart';
+import 'core/utils/notification_service.dart';
 import 'features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/workout/presentation/bloc/workout_bloc.dart';
@@ -10,8 +12,10 @@ import 'features/workout/domain/entities/workout.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await configureDependencies();
+  await BackgroundService.instance.initialize();
+  await NotificationService.instance.initialize();
 
   runApp(const FitTrackProApp());
 }
@@ -62,7 +66,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-  
+
   final List<Widget> _pages = [
     const DashboardPage(),
     const PlaceholderPage(title: 'Workouts'),

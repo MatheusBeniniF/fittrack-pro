@@ -90,7 +90,7 @@ class _AnimatedStatsCardState extends State<AnimatedStatsCard>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       duration: AppDurations.medium,
       vsync: this,
@@ -175,10 +175,13 @@ class _AnimatedStatsCardState extends State<AnimatedStatsCard>
                             Flexible(
                               child: Text(
                                 widget.title,
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: widget.color,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      color: widget.color,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -186,7 +189,8 @@ class _AnimatedStatsCardState extends State<AnimatedStatsCard>
                               padding: const EdgeInsets.all(AppSizes.paddingS),
                               decoration: BoxDecoration(
                                 color: widget.color.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(AppSizes.radiusS),
+                                borderRadius:
+                                    BorderRadius.circular(AppSizes.radiusS),
                               ),
                               child: Icon(
                                 widget.icon,
@@ -199,18 +203,25 @@ class _AnimatedStatsCardState extends State<AnimatedStatsCard>
                         const SizedBox(height: AppSizes.paddingM),
                         AnimatedCounter(
                           value: widget.value,
-                          textStyle: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                          textStyle: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                         ),
                         if (widget.subtitle != null) ...[
                           const SizedBox(height: AppSizes.paddingXS),
                           Text(
                             widget.subtitle!,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withOpacity(0.6),
+                                    ),
                           ),
                         ],
                       ],
@@ -252,7 +263,7 @@ class _AnimatedCounterState extends State<AnimatedCounter>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       duration: widget.duration,
       vsync: this,
@@ -292,18 +303,21 @@ class _AnimatedCounterState extends State<AnimatedCounter>
       animation: _animation,
       builder: (context, child) {
         final isNumeric = RegExp(r'^\d+(\.\d+)?').hasMatch(_currentValue);
-        
+
         if (isNumeric && _previousValue.isNotEmpty) {
-          final current = double.tryParse(_currentValue.replaceAll(RegExp(r'[^\d.]'), ''));
-          final previous = double.tryParse(_previousValue.replaceAll(RegExp(r'[^\d.]'), ''));
-          
+          final current =
+              double.tryParse(_currentValue.replaceAll(RegExp(r'[^\d.]'), ''));
+          final previous =
+              double.tryParse(_previousValue.replaceAll(RegExp(r'[^\d.]'), ''));
+
           if (current != null && previous != null) {
-            final animatedValue = previous + (current - previous) * _animation.value;
+            final animatedValue =
+                previous + (current - previous) * _animation.value;
             final formattedValue = _currentValue.replaceAll(
               RegExp(r'\d+(\.\d+)?'),
               animatedValue.toStringAsFixed(current % 1 == 0 ? 0 : 1),
             );
-            
+
             return Text(
               formattedValue,
               style: widget.textStyle,

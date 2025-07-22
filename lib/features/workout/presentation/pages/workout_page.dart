@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vibration/vibration.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/app_utils.dart';
+import '../../../../core/utils/animation_service.dart';
 import '../../../../shared/widgets/custom_progress_ring.dart';
 import '../bloc/workout_bloc.dart';
 import '../widgets/heart_rate_display.dart';
@@ -23,11 +23,6 @@ class _WorkoutPageState extends State<WorkoutPage>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  late AnimationController _swipeIndicatorController;
-  late Animation<double> _swipeIndicatorAnimation;
-
-  bool _showSwipeIndicator = false;
-  String _swipeAction = '';
 
   @override
   void initState() {
@@ -46,19 +41,6 @@ class _WorkoutPageState extends State<WorkoutPage>
       curve: Curves.easeInOut,
     ));
 
-    _swipeIndicatorController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _swipeIndicatorAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _swipeIndicatorController,
-      curve: Curves.easeInOut,
-    ));
-
     _pulseController.repeat(reverse: true);
 
     context.read<WorkoutBloc>().add(StartWorkoutEvent(widget.workout));
@@ -67,86 +49,7 @@ class _WorkoutPageState extends State<WorkoutPage>
   @override
   void dispose() {
     _pulseController.dispose();
-    _swipeIndicatorController.dispose();
     super.dispose();
-  }
-
-  void _handleSwipeGesture(DragEndDetails details, WorkoutInProgress state) {
-    final velocity = details.primaryVelocity ?? 0;
-    const minVelocity = 500.0;
-
-    if (velocity.abs() < minVelocity) return;
-
-    _triggerHapticFeedback();
-
-    if (velocity > 0) {
-      if (state.isPaused) {
-        context.read<WorkoutBloc>().add(ResumeWorkoutEvent(state.workout.id));
-        _showSwipeAction('Resume');
-      }
-    } else {
-      if (!state.isPaused) {
-        context.read<WorkoutBloc>().add(PauseWorkoutEvent(state.workout.id));
-        _showSwipeAction('Pause');
-      }
-    }
-  }
-
-  void _handlePanUpdate(DragUpdateDetails details, WorkoutInProgress state) {
-    final delta = details.delta.dx;
-
-    if (delta.abs() > 10) {
-      String action = '';
-      if (delta > 0 && state.isPaused) {
-        action = 'Resume';
-      } else if (delta < 0 && !state.isPaused) {
-        action = 'Pause';
-      }
-
-      if (action.isNotEmpty && action != _swipeAction) {
-        setState(() {
-          _swipeAction = action;
-          _showSwipeIndicator = true;
-        });
-        _swipeIndicatorController.forward();
-      }
-    }
-  }
-
-  void _handlePanEnd(DragEndDetails details) {
-    setState(() {
-      _showSwipeIndicator = false;
-      _swipeAction = '';
-    });
-    _swipeIndicatorController.reverse();
-  }
-
-  void _showSwipeAction(String action) {
-    setState(() {
-      _swipeAction = action;
-      _showSwipeIndicator = true;
-    });
-    _swipeIndicatorController.forward();
-
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted) {
-        setState(() {
-          _showSwipeIndicator = false;
-          _swipeAction = '';
-        });
-        _swipeIndicatorController.reverse();
-      }
-    });
-  }
-
-  void _triggerHapticFeedback() async {
-    try {
-      if (await Vibration.hasVibrator() ?? false) {
-        Vibration.vibrate(duration: 50);
-      }
-    } catch (e) {
-      AppUtils.hapticFeedback();
-    }
   }
 
   @override
@@ -205,185 +108,201 @@ class _WorkoutPageState extends State<WorkoutPage>
   }
 
   Widget _buildWorkoutInterface(BuildContext context, WorkoutInProgress state) {
-    return Stack(
-      children: [
-        GestureDetector(
-          onPanUpdate: (details) => _handlePanUpdate(details, state),
-          onPanEnd: _handlePanEnd,
-          onHorizontalDragEnd: (details) => _handleSwipeGesture(details, state),
+    return GestureDetector(
+      onHorizontalDragEnd: (details) => _handleSwipeGesture(details, state),
+      child: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height -
+                MediaQuery.of(context).padding.top -
+                MediaQuery.of(context).padding.bottom -
+                kToolbarHeight, // Account for app bar if present
+          ),
           child: Column(
             children: [
               _buildHeader(context, state),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: MediaQuery.of(context).size.height -
-                          MediaQuery.of(context).padding.top -
-                          MediaQuery.of(context).padding.bottom -
-                          200,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: AppSizes.paddingL),
-                        _buildProgressRing(state),
-                        const SizedBox(height: AppSizes.paddingXL),
-                        HeartRateDisplay(
-                          heartRate: state.currentHeartRate,
-                          isPaused: state.isPaused,
-                        ),
-                        const SizedBox(height: AppSizes.paddingL),
-                        WorkoutStatsDisplay(
-                          duration: state.elapsed,
-                          calories: state.currentCalories,
-                          distance: state.currentDistance,
-                        ),
-                        const SizedBox(height: AppSizes.paddingXL),
-                      ],
-                    ),
-                  ),
+              // Remove Expanded and use flexible spacing instead
+              const SizedBox(height: AppSizes.paddingXL),
+              _buildProgressRing(state),
+              const SizedBox(height: AppSizes.paddingXL),
+              // Use a simpler pulse animation to avoid rendering issues
+              AnimatedScale(
+                scale: state.isPaused ? 1.0 : 1.05,
+                duration: Duration(
+                    milliseconds: 60000 ~/
+                        (state.currentHeartRate > 0
+                            ? state.currentHeartRate
+                            : 75)),
+                curve: Curves.easeInOut,
+                child: HeartRateDisplay(
+                  heartRate: state.currentHeartRate,
+                  isPaused: state.isPaused,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: AppSizes.paddingL,
-                  right: AppSizes.paddingL,
-                  bottom: AppSizes.paddingL,
+              const SizedBox(height: AppSizes.paddingL),
+              // Use a simpler animation to avoid rendering issues
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: WorkoutStatsDisplay(
+                  duration: state.elapsed,
+                  calories: state.currentCalories,
+                  distance: state.currentDistance,
                 ),
-                child: WorkoutControls(
-                  isPaused: state.isPaused,
-                  onPause: () {
-                    AppUtils.hapticFeedback();
-                    context
-                        .read<WorkoutBloc>()
-                        .add(PauseWorkoutEvent(state.workout.id));
-                  },
-                  onResume: () {
-                    AppUtils.hapticFeedback();
-                    context
-                        .read<WorkoutBloc>()
-                        .add(ResumeWorkoutEvent(state.workout.id));
-                  },
-                  onStop: () {
-                    AppUtils.hapticFeedback();
-                    _showStopConfirmation(context, state.workout.id);
-                  },
+              ),
+              const SizedBox(height: AppSizes.paddingXL),
+              WorkoutControls(
+                isPaused: state.isPaused,
+                onPause: () {
+                  AnimationService.instance
+                      .triggerHapticFeedback(HapticFeedbackType.medium);
+                  context
+                      .read<WorkoutBloc>()
+                      .add(PauseWorkoutEvent(state.workout.id));
+                },
+                onResume: () {
+                  AnimationService.instance
+                      .triggerHapticFeedback(HapticFeedbackType.medium);
+                  context
+                      .read<WorkoutBloc>()
+                      .add(ResumeWorkoutEvent(state.workout.id));
+                },
+                onStop: () {
+                  AnimationService.instance
+                      .triggerHapticFeedback(HapticFeedbackType.heavy);
+                  context
+                      .read<WorkoutBloc>()
+                      .add(StopWorkoutEvent(state.workout.id));
+                },
+              ),
+              const SizedBox(height: AppSizes.paddingL),
+              _buildSwipeInstructions(state),
+              const SizedBox(height: AppSizes.paddingL), // Bottom padding
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleSwipeGesture(DragEndDetails details, WorkoutInProgress state) {
+    const double threshold = 100.0;
+
+    if (details.primaryVelocity == null) return;
+
+    if (details.primaryVelocity! > threshold) {
+      // Swipe right - Resume workout
+      if (state.isPaused) {
+        AnimationService.instance
+            .triggerHapticFeedback(HapticFeedbackType.heavy);
+        context.read<WorkoutBloc>().add(ResumeWorkoutEvent(state.workout.id));
+        _showSwipeIndicator('Resume', Icons.play_arrow, Colors.green);
+      }
+    } else if (details.primaryVelocity! < -threshold) {
+      // Swipe left - Pause workout
+      if (!state.isPaused) {
+        AnimationService.instance
+            .triggerHapticFeedback(HapticFeedbackType.heavy);
+        context.read<WorkoutBloc>().add(PauseWorkoutEvent(state.workout.id));
+        _showSwipeIndicator('Pause', Icons.pause, Colors.orange);
+      }
+    }
+  }
+
+  void _showSwipeIndicator(String action, IconData icon, Color color) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.paddingL,
+            vertical: AppSizes.paddingM,
+          ),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(AppSizes.radiusL),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.7),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: Colors.white, size: 24),
+              const SizedBox(width: AppSizes.paddingS),
+              Text(
+                action,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
         ),
-        if (_showSwipeIndicator) _buildSwipeIndicator(),
-        _buildSwipeInstructions(state),
-      ],
+      ),
     );
-  }
 
-  Widget _buildSwipeIndicator() {
-    return AnimatedBuilder(
-      animation: _swipeIndicatorAnimation,
-      builder: (context, child) {
-        return Positioned.fill(
-          child: Container(
-            color: Colors.black
-                .withValues(alpha: 0.3 * _swipeIndicatorAnimation.value),
-            child: Center(
-              child: Transform.scale(
-                scale: _swipeIndicatorAnimation.value,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSizes.paddingXL,
-                    vertical: AppSizes.paddingL,
-                  ),
-                  decoration: BoxDecoration(
-                    color:
-                        _swipeAction == 'Pause' ? Colors.orange : Colors.green,
-                    borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _swipeAction == 'Pause'
-                            ? Icons.pause
-                            : Icons.play_arrow,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                      const SizedBox(width: AppSizes.paddingM),
-                      Text(
-                        _swipeAction,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
+    overlay.insert(overlayEntry);
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      overlayEntry.remove();
+    });
   }
 
   Widget _buildSwipeInstructions(WorkoutInProgress state) {
-    return Positioned(
-      bottom: 120,
-      left: 0,
-      right: 0,
-      child: AnimatedOpacity(
-        opacity: _showSwipeIndicator ? 0.0 : 0.7,
-        duration: const Duration(milliseconds: 300),
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: AppSizes.paddingXL),
-          padding: const EdgeInsets.all(AppSizes.paddingM),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(AppSizes.radiusM),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              if (!state.isPaused)
-                const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.swipe_left, color: Colors.white, size: 16),
-                    SizedBox(width: 4),
-                    Text(
-                      'Swipe left to pause',
-                      style: TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  ],
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSizes.paddingL,
+        vertical: AppSizes.paddingS,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          if (!state.isPaused)
+            Row(
+              children: [
+                Icon(
+                  Icons.swipe_left,
+                  color: AppColors.onPrimary.withOpacity(0.7),
+                  size: 20,
                 ),
-              if (state.isPaused)
-                const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.swipe_right, color: Colors.white, size: 16),
-                    SizedBox(width: 4),
-                    Text(
-                      'Swipe right to resume',
-                      style: TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  ],
+                const SizedBox(width: AppSizes.paddingXS),
+                Text(
+                  'Swipe left to pause',
+                  style: TextStyle(
+                    color: AppColors.onPrimary.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
                 ),
-            ],
-          ),
-        ),
+              ],
+            ),
+          if (state.isPaused)
+            Row(
+              children: [
+                Icon(
+                  Icons.swipe_right,
+                  color: AppColors.onPrimary.withOpacity(0.7),
+                  size: 20,
+                ),
+                const SizedBox(width: AppSizes.paddingXS),
+                Text(
+                  'Swipe right to resume',
+                  style: TextStyle(
+                    color: AppColors.onPrimary.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+        ],
       ),
     );
   }
@@ -478,7 +397,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                 Text(
                   state.isPaused ? 'Paused' : 'In Progress',
                   style: TextStyle(
-                    color: AppColors.onPrimary.withValues(alpha: 0.8),
+                    color: AppColors.onPrimary.withOpacity(0.8),
                     fontSize: 16,
                   ),
                 ),
@@ -631,7 +550,7 @@ class _SummaryStatRow extends StatelessWidget {
           Icon(
             icon,
             color: AppColors.primary,
-            size: AppSizes.iconL,
+            size: AppSizes.iconM,
           ),
           const SizedBox(width: AppSizes.paddingM),
           Expanded(
