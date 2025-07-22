@@ -69,14 +69,14 @@ class WorkoutStatsDisplay extends StatelessWidget {
     if (distance <= 0 || duration.inMinutes == 0) {
       return '--';
     }
-    
+
     final distanceKm = distance / 1000;
     final paceMinutesPerKm = duration.inMinutes / distanceKm;
-    
+
     if (paceMinutesPerKm.isInfinite || paceMinutesPerKm.isNaN) {
       return '--';
     }
-    
+
     final minutes = paceMinutesPerKm.floor();
     final seconds = ((paceMinutesPerKm - minutes) * 60).floor();
     return '$minutes:${seconds.toString().padLeft(2, '0')}/km';
