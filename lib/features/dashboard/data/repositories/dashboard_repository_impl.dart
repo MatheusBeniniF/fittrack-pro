@@ -22,7 +22,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
         lastWorkoutDate: DateTime.now().subtract(const Duration(days: 1)),
         dailyStats: _generateDailyStats(),
         weeklyStats: _generateWeeklyStats(),
-        workoutTypeDistribution: {
+        workoutTypeDistribution: const {
           'Running': 40.0,
           'Strength': 30.0,
           'Cycling': 20.0,

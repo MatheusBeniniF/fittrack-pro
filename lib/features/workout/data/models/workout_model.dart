@@ -24,6 +24,7 @@ class WorkoutModel extends Workout {
   factory WorkoutModel.fromJson(Map<String, dynamic> json) =>
       _$WorkoutModelFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$WorkoutModelToJson(this);
 
   factory WorkoutModel.fromEntity(Workout workout) {
@@ -58,7 +59,8 @@ class WorkoutModel extends Workout {
       maxHeartRate: maxHeartRate,
       status: status,
       notes: notes,
-      points: (points as List<WorkoutPointModel>).map((p) => p.toEntity()).toList(),
+      points:
+          (points as List<WorkoutPointModel>).map((p) => p.toEntity()).toList(),
     );
   }
 }
@@ -78,6 +80,7 @@ class WorkoutPointModel extends WorkoutPoint {
   factory WorkoutPointModel.fromJson(Map<String, dynamic> json) =>
       _$WorkoutPointModelFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$WorkoutPointModelToJson(this);
 
   factory WorkoutPointModel.fromEntity(WorkoutPoint point) {

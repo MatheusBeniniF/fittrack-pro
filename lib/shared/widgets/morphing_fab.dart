@@ -33,12 +33,12 @@ class _MorphingFABState extends State<MorphingFAB>
   @override
   void initState() {
     super.initState();
-    
+
     _sizeController = AnimationController(
       duration: widget.animationDuration,
       vsync: this,
     );
-    
+
     _rotationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -121,7 +121,8 @@ class _MorphingFABState extends State<MorphingFAB>
               onTap: widget.onPressed,
               borderRadius: BorderRadius.circular(28.0),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSizes.paddingM),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppSizes.paddingM),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -129,7 +130,7 @@ class _MorphingFABState extends State<MorphingFAB>
                     if (widget.state == FABState.loading)
                       RotationTransition(
                         turns: _rotationAnimation,
-                        child: Icon(
+                        child: const Icon(
                           Icons.refresh,
                           color: AppColors.onPrimary,
                           size: AppSizes.iconM,

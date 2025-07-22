@@ -52,7 +52,7 @@ class _CustomChartState extends State<CustomChart>
   @override
   void initState() {
     super.initState();
-    
+
     if (widget.animated) {
       _animationController = AnimationController(
         duration: widget.animationDuration,
@@ -73,7 +73,7 @@ class _CustomChartState extends State<CustomChart>
         duration: Duration.zero,
         vsync: this,
       );
-      _animation = AlwaysStoppedAnimation(1.0);
+      _animation = const AlwaysStoppedAnimation(1.0);
     }
   }
 
@@ -173,7 +173,7 @@ class ChartPainter extends CustomPainter {
     final minY = data.map((p) => p.y).reduce(math.min);
     final maxY = data.map((p) => p.y).reduce(math.max);
 
-    final padding = 20.0;
+    const padding = 20.0;
     final chartWidth = size.width - 2 * padding;
     final chartHeight = size.height - 2 * padding;
 
@@ -194,7 +194,7 @@ class ChartPainter extends CustomPainter {
       final point = data[i];
       final x = padding + (point.x - minX) / (maxX - minX) * chartWidth;
       final y = padding + (maxY - point.y) / (maxY - minY) * chartHeight;
-      
+
       final animatedIndex = (data.length - 1) * animationProgress;
       if (i <= animatedIndex) {
         points.add(Offset(x, y));
@@ -213,7 +213,7 @@ class ChartPainter extends CustomPainter {
     for (int i = 1; i < points.length; i++) {
       final current = points[i];
       final previous = points[i - 1];
-      
+
       final controlPoint1 = Offset(
         previous.dx + (current.dx - previous.dx) * 0.3,
         previous.dy,

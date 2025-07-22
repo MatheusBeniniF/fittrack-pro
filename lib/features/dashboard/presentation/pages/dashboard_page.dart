@@ -41,7 +41,8 @@ class _DashboardPageState extends State<DashboardPage> {
       setState(() {
         _fabState = FABState.expanded;
       });
-    } else if (_scrollController.offset <= 100 && _fabState == FABState.expanded) {
+    } else if (_scrollController.offset <= 100 &&
+        _fabState == FABState.expanded) {
       setState(() {
         _fabState = FABState.collapsed;
       });
@@ -127,7 +128,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _showWorkoutTypeSelection(BuildContext context) {
     AppUtils.hapticFeedback();
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -193,7 +194,7 @@ class _DashboardPageState extends State<DashboardPage> {
       averageHeartRate: 0,
       maxHeartRate: 0,
       status: WorkoutStatus.planned,
-      points: [],
+      points: const [],
     );
 
     context.read<DashboardCubit>().startWorkout(workout);
@@ -214,7 +215,8 @@ class _WorkoutTypeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icon = _getWorkoutIcon(type);
-    final color = AppColors.chartColors[type.index % AppColors.chartColors.length];
+    final color =
+        AppColors.chartColors[type.index % AppColors.chartColors.length];
 
     return AnimatedStatsCard(
       title: type.name.capitalize(),

@@ -140,7 +140,7 @@ class ProgressRingPainter extends CustomPainter {
         progressPaint.color = colors.first;
       }
 
-      final startAngle = -math.pi / 2; // Start from top
+      const startAngle = -math.pi / 2; // Start from top
       final sweepAngle = 2 * math.pi * progress;
 
       canvas.drawArc(

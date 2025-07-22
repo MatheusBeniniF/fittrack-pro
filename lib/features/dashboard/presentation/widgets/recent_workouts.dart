@@ -22,12 +22,11 @@ class RecentWorkouts extends StatelessWidget {
             Text(
               'Recent Workouts',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             TextButton(
-              onPressed: () {
-              },
+              onPressed: () {},
               child: const Text('See All'),
             ),
           ],
@@ -56,7 +55,7 @@ class RecentWorkouts extends StatelessWidget {
         averageHeartRate: 145,
         maxHeartRate: 165,
         status: WorkoutStatus.completed,
-        points: [],
+        points: const [],
       ),
       Workout(
         id: '2',
@@ -70,7 +69,7 @@ class RecentWorkouts extends StatelessWidget {
         averageHeartRate: 120,
         maxHeartRate: 155,
         status: WorkoutStatus.completed,
-        points: [],
+        points: const [],
       ),
       Workout(
         id: '3',
@@ -84,7 +83,7 @@ class RecentWorkouts extends StatelessWidget {
         averageHeartRate: 85,
         maxHeartRate: 110,
         status: WorkoutStatus.completed,
-        points: [],
+        points: const [],
       ),
     ];
   }
@@ -98,7 +97,8 @@ class _WorkoutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final workoutIcon = _getWorkoutIcon(workout.type);
-    final workoutColor = AppColors.chartColors[workout.type.index % AppColors.chartColors.length];
+    final workoutColor = AppColors
+        .chartColors[workout.type.index % AppColors.chartColors.length];
 
     return Card(
       elevation: 4,
@@ -136,15 +136,18 @@ class _WorkoutCard extends StatelessWidget {
                     Text(
                       workout.name,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                            fontWeight: FontWeight.w600,
+                          ),
                     ),
                     const SizedBox(height: AppSizes.paddingXS),
                     Text(
                       '${AppUtils.formatDuration(workout.duration)} • ${AppUtils.formatCalories(workout.caloriesBurned)} cal',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                      ),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.6),
+                          ),
                     ),
                   ],
                 ),
@@ -155,17 +158,20 @@ class _WorkoutCard extends StatelessWidget {
                   Text(
                     AppUtils.formatDate(workout.startTime),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                    ),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.6),
+                        ),
                   ),
                   const SizedBox(height: AppSizes.paddingXS),
                   if (workout.distanceMeters > 0)
                     Text(
                       AppUtils.formatDistance(workout.distanceMeters),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: workoutColor,
-                      ),
+                            fontWeight: FontWeight.w600,
+                            color: workoutColor,
+                          ),
                     ),
                 ],
               ),

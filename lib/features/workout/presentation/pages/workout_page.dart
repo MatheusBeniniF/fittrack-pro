@@ -22,16 +22,16 @@ class _WorkoutPageState extends State<WorkoutPage>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _pulseAnimation = Tween<double>(
       begin: 0.9,
       end: 1.1,
@@ -39,9 +39,9 @@ class _WorkoutPageState extends State<WorkoutPage>
       parent: _pulseController,
       curve: Curves.easeInOut,
     ));
-    
+
     _pulseController.repeat(reverse: true);
-    
+
     context.read<WorkoutBloc>().add(StartWorkoutEvent(widget.workout));
   }
 
@@ -133,11 +133,15 @@ class _WorkoutPageState extends State<WorkoutPage>
           isPaused: state.isPaused,
           onPause: () {
             AppUtils.hapticFeedback();
-            context.read<WorkoutBloc>().add(PauseWorkoutEvent(state.workout.id));
+            context
+                .read<WorkoutBloc>()
+                .add(PauseWorkoutEvent(state.workout.id));
           },
           onResume: () {
             AppUtils.hapticFeedback();
-            context.read<WorkoutBloc>().add(ResumeWorkoutEvent(state.workout.id));
+            context
+                .read<WorkoutBloc>()
+                .add(ResumeWorkoutEvent(state.workout.id));
           },
           onStop: () {
             AppUtils.hapticFeedback();
@@ -207,7 +211,8 @@ class _WorkoutPageState extends State<WorkoutPage>
   Widget _buildProgressRing(WorkoutInProgress state) {
     // Calculate progress based on target duration (e.g., 30 minutes)
     const targetDuration = Duration(minutes: 30);
-    final progress = state.elapsed.inMilliseconds / targetDuration.inMilliseconds;
+    final progress =
+        state.elapsed.inMilliseconds / targetDuration.inMilliseconds;
     final clampedProgress = progress.clamp(0.0, 1.0);
 
     return AnimatedBuilder(
@@ -219,7 +224,7 @@ class _WorkoutPageState extends State<WorkoutPage>
             progress: clampedProgress,
             size: 280,
             strokeWidth: 16,
-            colors: [
+            colors: const [
               AppColors.secondary,
               AppColors.onPrimary,
             ],
@@ -318,8 +323,8 @@ class _WorkoutSummarySheet extends StatelessWidget {
             Text(
               'Workout Complete!',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: AppSizes.paddingL),
             _buildSummaryStats(),
@@ -403,8 +408,8 @@ class _SummaryStatRow extends StatelessWidget {
           Text(
             value,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ],
       ),

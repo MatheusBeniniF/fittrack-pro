@@ -25,14 +25,15 @@ abstract class WorkoutLocalDataSource {
 @LazySingleton(as: WorkoutLocalDataSource)
 class WorkoutLocalDataSourceImpl implements WorkoutLocalDataSource {
   final SharedPreferences sharedPreferences;
-  
+
   static const String _workoutsKey = 'cached_workouts';
   static const String _currentWorkoutKey = 'current_workout';
   static const String _workoutPointsKey = 'workout_points_';
 
   final StreamController<WorkoutModel?> _currentWorkoutController =
       StreamController<WorkoutModel?>.broadcast();
-  final Map<String, StreamController<List<WorkoutPointModel>>> _pointsControllers = {};
+  final Map<String, StreamController<List<WorkoutPointModel>>>
+      _pointsControllers = {};
 
   WorkoutLocalDataSourceImpl({required this.sharedPreferences});
 
@@ -46,7 +47,8 @@ class WorkoutLocalDataSourceImpl implements WorkoutLocalDataSource {
       }
       return [];
     } catch (e) {
-      throw CacheException('Failed to get workouts from cache: ${e.toString()}');
+      throw CacheException(
+          'Failed to get workouts from cache: ${e.toString()}');
     }
   }
 
@@ -56,7 +58,7 @@ class WorkoutLocalDataSourceImpl implements WorkoutLocalDataSource {
       final workouts = await getWorkouts();
       final workout = workouts.firstWhere(
         (w) => w.id == id,
-        orElse: () => throw CacheException('Workout not found'),
+        orElse: () => throw const CacheException('Workout not found'),
       );
       return workout;
     } catch (e) {
@@ -85,7 +87,7 @@ class WorkoutLocalDataSourceImpl implements WorkoutLocalDataSource {
         workouts[index] = workout;
         await _saveWorkouts(workouts);
       } else {
-        throw CacheException('Workout not found for update');
+        throw const CacheException('Workout not found for update');
       }
     } catch (e) {
       throw CacheException('Failed to update workout: ${e.toString()}');
@@ -169,10 +171,10 @@ class WorkoutLocalDataSourceImpl implements WorkoutLocalDataSource {
             endTime: DateTime.now(),
           ),
         );
-        
+
         // Save to workouts list
         await createWorkout(completedWorkout);
-        
+
         // Clear current workout
         await sharedPreferences.remove(_currentWorkoutKey);
         _currentWorkoutController.add(null);
@@ -183,12 +185,13 @@ class WorkoutLocalDataSourceImpl implements WorkoutLocalDataSource {
   }
 
   @override
-  Future<void> addWorkoutPoint(String workoutId, WorkoutPointModel point) async {
+  Future<void> addWorkoutPoint(
+      String workoutId, WorkoutPointModel point) async {
     try {
       final points = await _getWorkoutPoints(workoutId);
       points.add(point);
       await _saveWorkoutPoints(workoutId, points);
-      
+
       // Notify stream listeners
       final controller = _pointsControllers[workoutId];
       controller?.add(points);
@@ -203,21 +206,22 @@ class WorkoutLocalDataSourceImpl implements WorkoutLocalDataSource {
     getCurrentWorkout().then((workout) {
       _currentWorkoutController.add(workout);
     });
-    
+
     return _currentWorkoutController.stream;
   }
 
   @override
   Stream<List<WorkoutPointModel>> getWorkoutPointsStream(String workoutId) {
     if (!_pointsControllers.containsKey(workoutId)) {
-      _pointsControllers[workoutId] = StreamController<List<WorkoutPointModel>>.broadcast();
-      
+      _pointsControllers[workoutId] =
+          StreamController<List<WorkoutPointModel>>.broadcast();
+
       // Initialize with existing points
       _getWorkoutPoints(workoutId).then((points) {
         _pointsControllers[workoutId]?.add(points);
       });
     }
-    
+
     return _pointsControllers[workoutId]!.stream;
   }
 
@@ -228,10 +232,13 @@ class WorkoutLocalDataSourceImpl implements WorkoutLocalDataSource {
 
   Future<List<WorkoutPointModel>> _getWorkoutPoints(String workoutId) async {
     try {
-      final jsonString = sharedPreferences.getString('$_workoutPointsKey$workoutId');
+      final jsonString =
+          sharedPreferences.getString('$_workoutPointsKey$workoutId');
       if (jsonString != null) {
         final List<dynamic> jsonList = json.decode(jsonString);
-        return jsonList.map((json) => WorkoutPointModel.fromJson(json)).toList();
+        return jsonList
+            .map((json) => WorkoutPointModel.fromJson(json))
+            .toList();
       }
       return [];
     } catch (e) {
@@ -239,8 +246,10 @@ class WorkoutLocalDataSourceImpl implements WorkoutLocalDataSource {
     }
   }
 
-  Future<void> _saveWorkoutPoints(String workoutId, List<WorkoutPointModel> points) async {
+  Future<void> _saveWorkoutPoints(
+      String workoutId, List<WorkoutPointModel> points) async {
     final jsonString = json.encode(points.map((p) => p.toJson()).toList());
-    await sharedPreferences.setString('$_workoutPointsKey$workoutId', jsonString);
+    await sharedPreferences.setString(
+        '$_workoutPointsKey$workoutId', jsonString);
   }
 }

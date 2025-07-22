@@ -53,8 +53,9 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         if (workout != null && workout.status == WorkoutStatus.inProgress) {
           _workoutStartTime = workout.startTime;
           _startTimers();
-          
-          final elapsed = DateTime.now().difference(_workoutStartTime!) - _totalPausedDuration;
+
+          final elapsed = DateTime.now().difference(_workoutStartTime!) -
+              _totalPausedDuration;
           emit(WorkoutInProgress(
             workout: workout,
             elapsed: elapsed,
@@ -62,9 +63,10 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
             currentDistance: 0.0,
             currentCalories: 0.0,
             isPaused: false,
-            points: [],
+            points: const [],
           ));
-        } else if (workout != null && workout.status == WorkoutStatus.completed) {
+        } else if (workout != null &&
+            workout.status == WorkoutStatus.completed) {
           _stopTimers();
           emit(WorkoutCompleted(workout));
         }
@@ -72,7 +74,8 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     );
   }
 
-  Future<void> _onStartWorkout(StartWorkoutEvent event, Emitter<WorkoutState> emit) async {
+  Future<void> _onStartWorkout(
+      StartWorkoutEvent event, Emitter<WorkoutState> emit) async {
     emit(WorkoutLoading());
 
     final result = await _startWorkout(event.workout);
@@ -82,7 +85,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         _workoutStartTime = DateTime.now();
         _totalPausedDuration = Duration.zero;
         _startTimers();
-        
+
         emit(WorkoutInProgress(
           workout: event.workout.copyWith(
             startTime: _workoutStartTime!,
@@ -93,18 +96,19 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
           currentDistance: 0.0,
           currentCalories: 0.0,
           isPaused: false,
-          points: [],
+          points: const [],
         ));
       },
     );
   }
 
-  Future<void> _onPauseWorkout(PauseWorkoutEvent event, Emitter<WorkoutState> emit) async {
+  Future<void> _onPauseWorkout(
+      PauseWorkoutEvent event, Emitter<WorkoutState> emit) async {
     final currentState = state;
     if (currentState is WorkoutInProgress && !currentState.isPaused) {
       _pauseStartTime = DateTime.now();
       _stopTimers();
-      
+
       final result = await _pauseWorkout(event.workoutId);
       result.fold(
         (failure) => emit(WorkoutError(failure.message)),
@@ -113,7 +117,8 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     }
   }
 
-  Future<void> _onResumeWorkout(ResumeWorkoutEvent event, Emitter<WorkoutState> emit) async {
+  Future<void> _onResumeWorkout(
+      ResumeWorkoutEvent event, Emitter<WorkoutState> emit) async {
     final currentState = state;
     if (currentState is WorkoutInProgress && currentState.isPaused) {
       if (_pauseStartTime != null) {
@@ -121,7 +126,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         _pauseStartTime = null;
       }
       _startTimers();
-      
+
       final result = await _resumeWorkout(event.workoutId);
       result.fold(
         (failure) => emit(WorkoutError(failure.message)),
@@ -130,9 +135,10 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     }
   }
 
-  Future<void> _onStopWorkout(StopWorkoutEvent event, Emitter<WorkoutState> emit) async {
+  Future<void> _onStopWorkout(
+      StopWorkoutEvent event, Emitter<WorkoutState> emit) async {
     _stopTimers();
-    
+
     final currentState = state;
     if (currentState is WorkoutInProgress) {
       final result = await _stopWorkout(event.workoutId);
@@ -155,14 +161,16 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     }
   }
 
-  void _onUpdateHeartRate(UpdateHeartRateEvent event, Emitter<WorkoutState> emit) {
+  void _onUpdateHeartRate(
+      UpdateHeartRateEvent event, Emitter<WorkoutState> emit) {
     final currentState = state;
     if (currentState is WorkoutInProgress && !currentState.isPaused) {
       emit(currentState.copyWith(currentHeartRate: event.heartRate));
     }
   }
 
-  void _onUpdateLocation(UpdateLocationEvent event, Emitter<WorkoutState> emit) {
+  void _onUpdateLocation(
+      UpdateLocationEvent event, Emitter<WorkoutState> emit) {
     final currentState = state;
     if (currentState is WorkoutInProgress && !currentState.isPaused) {
       final newPoint = WorkoutPoint(
@@ -177,7 +185,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
 
       final updatedPoints = [...currentState.points, newPoint];
       final distance = _calculateTotalDistance(updatedPoints);
-      
+
       emit(currentState.copyWith(
         points: updatedPoints,
         currentDistance: distance,
@@ -187,12 +195,17 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     }
   }
 
-  void _onWorkoutTimerTick(WorkoutTimerTickEvent event, Emitter<WorkoutState> emit) {
+  void _onWorkoutTimerTick(
+      WorkoutTimerTickEvent event, Emitter<WorkoutState> emit) {
     final currentState = state;
-    if (currentState is WorkoutInProgress && !currentState.isPaused && _workoutStartTime != null) {
-      final elapsed = DateTime.now().difference(_workoutStartTime!) - _totalPausedDuration;
-      final calories = _calculateCalories(elapsed, currentState.currentHeartRate);
-      
+    if (currentState is WorkoutInProgress &&
+        !currentState.isPaused &&
+        _workoutStartTime != null) {
+      final elapsed =
+          DateTime.now().difference(_workoutStartTime!) - _totalPausedDuration;
+      final calories =
+          _calculateCalories(elapsed, currentState.currentHeartRate);
+
       emit(currentState.copyWith(
         elapsed: elapsed,
         currentCalories: calories,
@@ -200,8 +213,8 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     }
   }
 
-  void _onLoadCurrentWorkout(LoadCurrentWorkoutEvent event, Emitter<WorkoutState> emit) {
-  }
+  void _onLoadCurrentWorkout(
+      LoadCurrentWorkoutEvent event, Emitter<WorkoutState> emit) {}
 
   void _startTimers() {
     _timer?.cancel();
@@ -229,14 +242,16 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
 
   double _calculateTotalDistance(List<WorkoutPoint> points) {
     if (points.length < 2) return 0.0;
-    
+
     double totalDistance = 0.0;
     for (int i = 1; i < points.length; i++) {
-      if (points[i-1].latitude != null && points[i-1].longitude != null &&
-          points[i].latitude != null && points[i].longitude != null) {
+      if (points[i - 1].latitude != null &&
+          points[i - 1].longitude != null &&
+          points[i].latitude != null &&
+          points[i].longitude != null) {
         totalDistance += _calculateDistanceBetweenPoints(
-          points[i-1].latitude!,
-          points[i-1].longitude!,
+          points[i - 1].latitude!,
+          points[i - 1].longitude!,
           points[i].latitude!,
           points[i].longitude!,
         );
@@ -245,12 +260,15 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     return totalDistance;
   }
 
-  double _calculateDistanceBetweenPoints(double lat1, double lon1, double lat2, double lon2) {
+  double _calculateDistanceBetweenPoints(
+      double lat1, double lon1, double lat2, double lon2) {
     final double dLat = (lat2 - lat1) * (pi / 180);
     final double dLon = (lon2 - lon1) * (pi / 180);
     final double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(lat1 * (pi / 180)) * cos(lat2 * (pi / 180)) *
-        sin(dLon / 2) * sin(dLon / 2);
+        cos(lat1 * (pi / 180)) *
+            cos(lat2 * (pi / 180)) *
+            sin(dLon / 2) *
+            sin(dLon / 2);
     final double c = 2 * atan2(sqrt(a), sqrt(1 - a));
     return earthRadius * c;
   }

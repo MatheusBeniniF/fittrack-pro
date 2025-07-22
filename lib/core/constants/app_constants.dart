@@ -19,13 +19,13 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
-  
+
   static const LinearGradient cardGradient = LinearGradient(
     colors: [Color(0xFFFFFFFF), Color(0xFFF8F9FA)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
-  
+
   static const List<Color> chartColors = [
     Color(0xFF6C63FF),
     Color(0xFF03DAC6),
@@ -38,15 +38,15 @@ class AppColors {
 class AppSizes {
   static const double paddingXS = 2.0;
   static const double paddingS = 4.0;
-  static const double paddingM = 8.0;
+  static const double paddingM = 6.0;
   static const double paddingL = 12.0;
   static const double paddingXL = 16.0;
-  
+
   static const double radiusS = 4.0;
   static const double radiusM = 6.0;
   static const double radiusL = 8.0;
   static const double radiusXL = 12.0;
-  
+
   static const double iconS = 8.0;
   static const double iconM = 12.0;
   static const double iconL = 16.0;

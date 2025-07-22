@@ -21,9 +21,9 @@ class DashboardHeader extends StatelessWidget {
         AppSizes.paddingL,
         AppSizes.paddingM,
       ),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: AppColors.primaryGradient,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(AppSizes.radiusXL),
           bottomRight: Radius.circular(AppSizes.radiusXL),
         ),
@@ -101,7 +101,7 @@ class DashboardHeader extends StatelessWidget {
   Widget _buildDefaultAvatar() {
     return Container(
       color: AppColors.secondary,
-      child: Icon(
+      child: const Icon(
         Icons.person,
         color: AppColors.onPrimary,
         size: AppSizes.iconL,
