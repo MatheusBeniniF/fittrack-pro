@@ -1,10 +1,7 @@
 import 'dart:async';
-import 'dart:isolate';
-import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../constants/app_constants.dart';
 import 'notification_service.dart';
 
 class BackgroundService {

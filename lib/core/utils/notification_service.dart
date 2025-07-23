@@ -197,15 +197,15 @@ class NotificationService {
       ongoing: false,
       autoCancel: true,
       icon: '@drawable/ic_trophy',
-      largeIcon: DrawableResourceAndroidBitmap('@drawable/ic_trophy_large'),
+      largeIcon: const DrawableResourceAndroidBitmap('@drawable/ic_trophy_large'),
       styleInformation: BigTextStyleInformation(body),
       actions: [
-        AndroidNotificationAction(
+        const AndroidNotificationAction(
           'view_summary',
           'View Summary',
           icon: DrawableResourceAndroidBitmap('@drawable/ic_chart'),
         ),
-        AndroidNotificationAction(
+        const AndroidNotificationAction(
           'share_workout',
           'Share',
           icon: DrawableResourceAndroidBitmap('@drawable/ic_share'),
